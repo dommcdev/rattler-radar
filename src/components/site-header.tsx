@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
+import { UserMenu, UserMenuFallback } from "@/components/auth/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 /** Top bar. Page-specific controls (like search) are passed as children. */
@@ -22,6 +23,10 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
         <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
           {children}
           <ThemeToggle />
+          {/* The only part of the header that depends on who's visiting. */}
+          <Suspense fallback={<UserMenuFallback />}>
+            <UserMenu />
+          </Suspense>
         </div>
       </div>
     </header>

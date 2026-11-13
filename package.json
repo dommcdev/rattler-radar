@@ -10,13 +10,19 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "test": "bun test",
-    "sync:rattlertracks": "bun scripts/sync-rattlertracks.ts"
+    "sync:rattlertracks": "bun scripts/sync-rattlertracks.ts",
+    "auth:schema": "auth generate --config src/lib/auth.ts --output src/db/schema/auth.ts -y",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.22",
     "@hugeicons/core-free-icons": "^4.4.0",
     "@hugeicons/react": "^1.1.10",
+    "@libsql/client": "^0.18.0",
+    "better-auth": "^1.7.22",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
+    "drizzle-orm": "^0.45.4",
     "next": "16.4.6",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.8.1",
@@ -29,13 +35,16 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
+    "@next/env": "16.4.6",
     "@tailwindcss/turbopack": "^4",
     "@types/bun": "^1.4.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.2",
+    "auth": "^1.7.22",
     "babel-plugin-react-compiler": "1.0.0",
+    "drizzle-kit": "^0.31.11",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

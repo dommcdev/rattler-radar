@@ -2,9 +2,9 @@
 
 ## Getting Started
 
-Sync events from RattlerTracks, then run the development server:
-
 ```bash
+cp .env.example .env.local   # then fill it in (see "Sign-in" below)
+bun run db:push              # creates data/rattlerevents.db
 bun run sync:rattlertracks   # saves events to data/rattlertracks-events.json
 bun dev
 ```
@@ -28,6 +28,35 @@ RattlerTracks API
 That API is undocumented and disallowed in robots.txt, so the client keeps
 traffic minimal and validates every response, failing loudly if the format
 changes.
+
+## Sign-in
+
+Google sign-in via [Better Auth](https://www.better-auth.com) with its default
+settings, with users and sessions stored in SQLite through Drizzle. Sessions
+last 7 days and extend automatically while someone keeps using the app.
+
+| File | Role |
+| --- | --- |
+| `src/lib/auth.ts` | Better Auth config (Google provider) |
+| `src/lib/session.ts` | `getSession()` / `requireSession()` for pages and server actions |
+| `src/app/sign-in`, `src/app/account` | Sign-in page and the first account-only page |
+| `src/db/` | Drizzle client and schema (`schema/auth.ts` is generated) |
+
+To make a page account-only, call `requireSession()` in it.
+
+**Google credentials:** in Google Cloud Console, create an OAuth client ID
+(type "Web application") with the redirect URI
+`http://localhost:3000/api/auth/callback/google`, then put the client ID and
+secret in `.env.local`.
+
+**Database:** `DATABASE_URL` is a local file in development. To use Turso,
+set it to the `libsql://…` URL and add `DATABASE_AUTH_TOKEN`; no code changes.
+There are no migration files: `db:push` syncs the database to the schema.
+
+```bash
+bun run auth:schema   # regenerate Better Auth's tables after changing its config
+bun run db:push       # apply schema changes to the database
+```
 
 ## UI
 
