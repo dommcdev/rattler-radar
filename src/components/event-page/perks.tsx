@@ -1,17 +1,15 @@
 import {
-  CheckmarkCircle02Icon,
+  CircleCheckIcon,
   GiftIcon,
-  Pizza01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+  type LucideIcon,
+  PizzaIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Icon = typeof GiftIcon;
-
 /** Icons for the benefits RattlerTracks offers; anything else gets a check. */
-const PERK_ICONS: Record<string, { icon: Icon; className?: string }> = {
+const PERK_ICONS: Record<string, { icon: LucideIcon; className?: string }> = {
   // Gold pizza slice: the same mark the homepage cards use for free food.
-  "Free Food": { icon: Pizza01Icon, className: "text-gold" },
+  "Free Food": { icon: PizzaIcon, className: "text-gold" },
   "Free Stuff": { icon: GiftIcon },
 };
 
@@ -27,14 +25,12 @@ export function PerkIcon({
   benefit: string;
   className?: string;
 }) {
-  const { icon, className: iconClassName } = PERK_ICONS[benefit] ?? {
-    icon: CheckmarkCircle02Icon,
+  const { icon: Icon, className: iconClassName } = PERK_ICONS[benefit] ?? {
+    icon: CircleCheckIcon,
   };
   return (
-    <HugeiconsIcon
-      icon={icon}
+    <Icon
       aria-hidden
-      strokeWidth={2}
       className={cn("size-3.5 shrink-0", iconClassName, className)}
     />
   );

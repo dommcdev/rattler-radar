@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  CalendarRemove01Icon,
-  SearchRemoveIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { CalendarXIcon, SearchXIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -48,7 +44,7 @@ function NoEventsYet() {
     <Empty className="border py-16">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={CalendarRemove01Icon} />
+          <CalendarXIcon />
         </EmptyMedia>
         <EmptyTitle>No upcoming events yet</EmptyTitle>
         <EmptyDescription>
@@ -69,7 +65,7 @@ function NoMatches() {
     <Empty className="border py-16">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <HugeiconsIcon icon={SearchRemoveIcon} />
+          <SearchXIcon />
         </EmptyMedia>
         <EmptyTitle>
           {query ? `No events match "${query}"` : "No events match this filter"}

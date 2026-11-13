@@ -1,15 +1,12 @@
-import { Pizza01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { PizzaIcon } from "lucide-react";
 
 /** A small gold pizza slice: the one bit of color on a card. */
 export function FreeFoodIcon() {
   return (
-    <HugeiconsIcon
-      icon={Pizza01Icon}
+    <PizzaIcon
       role="img"
       aria-label="Free food"
       className="size-3.5 shrink-0 text-gold"
-      strokeWidth={2}
     />
   );
 }

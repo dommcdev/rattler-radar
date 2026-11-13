@@ -1,13 +1,13 @@
 "use client";
 
-import { Logout01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { CircleUserIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuLinkItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -38,20 +38,14 @@ export function AccountMenu({
           <p className="truncate text-xs text-muted-foreground">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/account">
-            <HugeiconsIcon icon={UserCircleIcon} />
-            Account
-          </Link>
+        <DropdownMenuLinkItem render={<Link href="/account" />}>
+          <CircleUserIcon />
+          Account
+        </DropdownMenuLinkItem>
+        <DropdownMenuItem onClick={() => signOut()}>
+          <LogOutIcon />
+          Sign out
         </DropdownMenuItem>
-        <form action={signOut}>
-          <DropdownMenuItem asChild>
-            <button type="submit" className="w-full">
-              <HugeiconsIcon icon={Logout01Icon} />
-              Sign out
-            </button>
-          </DropdownMenuItem>
-        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );

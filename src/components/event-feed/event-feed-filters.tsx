@@ -14,19 +14,18 @@ export function EventFeedFilters() {
   return (
     <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ToggleGroup
-        type="single"
         variant="outline"
         spacing={1.5}
-        value={filterId}
-        // Radix reports "" when the active pill is clicked again; keep it selected.
-        onValueChange={(value) => value && setFilter(value)}
+        value={[filterId]}
+        // Clicking the active pill again reports []; keep it selected.
+        onValueChange={([value]) => value && setFilter(value)}
         aria-label="Filter events"
       >
         {filters.map((filter) => (
           <ToggleGroupItem
             key={filter.id}
             value={filter.id}
-            className="h-7 rounded-full px-3 text-xs text-muted-foreground data-[state=on]:border-foreground/30 data-[state=on]:bg-muted data-[state=on]:text-foreground"
+            className="h-7 rounded-full px-3 text-xs text-muted-foreground aria-pressed:border-foreground/30 aria-pressed:bg-muted aria-pressed:text-foreground"
           >
             {filter.label}
           </ToggleGroupItem>

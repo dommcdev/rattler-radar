@@ -1,5 +1,4 @@
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,7 +39,7 @@ export default async function EventPage({ params }: PageProps<"/events/[id]">) {
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+          <ChevronLeftIcon className="size-4" />
           All events
         </Link>
 

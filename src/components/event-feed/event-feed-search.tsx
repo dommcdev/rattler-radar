@@ -1,7 +1,6 @@
 "use client";
 
-import { Search01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { SearchIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import {
   InputGroup,
@@ -33,7 +32,7 @@ export function EventFeedSearch({ className }: { className?: string }) {
   return (
     <InputGroup className={cn("h-8", className)}>
       <InputGroupAddon>
-        <HugeiconsIcon icon={Search01Icon} />
+        <SearchIcon />
       </InputGroupAddon>
       <InputGroupInput
         ref={inputRef}

@@ -1,10 +1,5 @@
-import {
-  Calendar03Icon,
-  LinkSquare02Icon,
-  Location01Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Button } from "@/components/ui/button";
+import { CalendarIcon, ExternalLinkIcon, MapPinIcon } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import type { FeedEvent } from "@/lib/events/feed-event";
 import { directionsUrl, googleCalendarUrl } from "@/lib/events/links";
 import { cn } from "@/lib/utils";
@@ -32,7 +27,7 @@ export function EventDetailsCard({ event }: { event: FeedEvent }) {
         <div className="flex items-center gap-4 border-t p-4">
           {/* Same width as the calendar tile, so the text lines up. */}
           <span className="flex w-14 shrink-0 justify-center text-muted-foreground">
-            <HugeiconsIcon icon={Location01Icon} className="size-5" />
+            <MapPinIcon className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-semibold tracking-tight">
@@ -56,22 +51,29 @@ export function EventDetailsCard({ event }: { event: FeedEvent }) {
 
         {/* Go */}
         <div className="space-y-2 border-t p-4">
-          <Button asChild size="lg" className="w-full">
-            <a href={event.url} target="_blank" rel="noopener noreferrer">
-              RSVP on RattlerTracks
-              <HugeiconsIcon icon={LinkSquare02Icon} data-icon="inline-end" />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="w-full">
-            <a
-              href={googleCalendarUrl(event)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <HugeiconsIcon icon={Calendar03Icon} data-icon="inline-start" />
-              Add to calendar
-            </a>
-          </Button>
+          {/* Links styled as buttons (Base UI's Button is for buttons only). */}
+          <a
+            href={event.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ size: "lg", className: "w-full" })}
+          >
+            RSVP on RattlerTracks
+            <ExternalLinkIcon data-icon="inline-end" />
+          </a>
+          <a
+            href={googleCalendarUrl(event)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({
+              variant: "outline",
+              size: "lg",
+              className: "w-full",
+            })}
+          >
+            <CalendarIcon data-icon="inline-start" />
+            Add to calendar
+          </a>
           {event.rsvpCount ? (
             <p className="pt-1 text-center text-sm text-muted-foreground">
               <GoingCount count={event.rsvpCount} />

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSession } from "@/lib/session";
 import { AccountMenu } from "./account-menu";
@@ -14,9 +14,9 @@ export async function UserMenu() {
 
   if (!session) {
     return (
-      <Button asChild size="lg">
-        <Link href="/sign-in">Sign in</Link>
-      </Button>
+      <Link href="/sign-in" className={buttonVariants({ size: "lg" })}>
+        Sign in
+      </Link>
     );
   }
 

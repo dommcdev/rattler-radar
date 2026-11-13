@@ -1,5 +1,4 @@
-import { Alert02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { TriangleAlertIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -67,7 +66,7 @@ async function SignInOptions({
     <CardContent className="space-y-4 p-0">
       {error ? (
         <Alert variant="destructive">
-          <HugeiconsIcon icon={Alert02Icon} />
+          <TriangleAlertIcon />
           <AlertTitle>
             {SIGN_IN_ERRORS[error] ?? DEFAULT_SIGN_IN_ERROR}
           </AlertTitle>
