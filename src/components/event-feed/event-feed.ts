@@ -7,11 +7,9 @@
  *     <EventFeed.Filters />   filter pills
  *     <EventFeed.Count />     "14 events" / "3 of 14"
  *     <EventFeed.Grid />      the cards
- *     <EventFeed.Details />   side panel for the clicked event
  *   </EventFeed.Provider>
  */
 
-import { EventFeedDetails } from "./event-details";
 import { EventFeedProvider } from "./event-feed-context";
 import { EventFeedCount, EventFeedFilters } from "./event-feed-filters";
 import { EventFeedGrid } from "./event-feed-grid";
@@ -23,5 +21,4 @@ export const EventFeed = {
   Filters: EventFeedFilters,
   Count: EventFeedCount,
   Grid: EventFeedGrid,
-  Details: EventFeedDetails,
 };

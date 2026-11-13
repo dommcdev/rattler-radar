@@ -22,16 +22,11 @@ interface EventFeedContextValue {
     filterId: string;
     /** Events matching the current search and filter. */
     visibleEvents: FeedEvent[];
-    /** The event shown in the details panel (kept while it animates closed). */
-    selectedEvent: FeedEvent | null;
-    isDetailsOpen: boolean;
   };
   actions: {
     setQuery: (query: string) => void;
     setFilter: (filterId: string) => void;
     clearSearchAndFilter: () => void;
-    openEvent: (eventId: string) => void;
-    closeEvent: () => void;
   };
   meta: {
     filters: FeedFilter[];
@@ -79,7 +74,7 @@ function searchableText(event: FeedEvent): string {
     event.title,
     event.location,
     event.topic,
-    ...event.hosts,
+    ...event.hosts.map((host) => host.name),
     ...event.categories,
   ]
     .filter(Boolean)
@@ -97,8 +92,6 @@ export function EventFeedProvider({
 }) {
   const [query, setQuery] = useState("");
   const [filterId, setFilterId] = useState(ALL_FILTER_ID);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const filters = buildFilters(events);
   const activeFilter = filters.find((f) => f.id === filterId) ?? filters[0];
@@ -111,10 +104,8 @@ export function EventFeedProvider({
       searchableText(event).includes(deferredQuery),
   );
 
-  const selectedEvent = events.find((event) => event.id === selectedId) ?? null;
-
   const value: EventFeedContextValue = {
-    state: { query, filterId, visibleEvents, selectedEvent, isDetailsOpen },
+    state: { query, filterId, visibleEvents },
     actions: {
       setQuery,
       setFilter: setFilterId,
@@ -122,11 +113,6 @@ export function EventFeedProvider({
         setQuery("");
         setFilterId(ALL_FILTER_ID);
       },
-      openEvent: (eventId) => {
-        setSelectedId(eventId);
-        setIsDetailsOpen(true);
-      },
-      closeEvent: () => setIsDetailsOpen(false),
     },
     meta: { filters, totalCount: events.length },
   };

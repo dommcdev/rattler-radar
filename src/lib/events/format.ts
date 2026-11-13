@@ -21,6 +21,19 @@ const partsFormat = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
+const longDateFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: CAMPUS_TIME_ZONE,
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
+
+const timeFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: CAMPUS_TIME_ZONE,
+  hour: "numeric",
+  minute: "2-digit",
+});
+
 /** { month: "Nov", day: "12", time: "5:00 PM" } */
 export function formatDateParts(iso: string): {
   month: string;
@@ -43,13 +56,24 @@ export function formatDateTime(iso: string): string {
 }
 
 /**
- * "Thu, Nov 12, 5:00 – 6:00 PM", or "Fri, Nov 13, 9:00 PM – Sat, Nov 14, 1:00 AM"
- * for events that span days. Falls back to the start time if there's no end.
+ * { date: "Thursday, November 12", time: "5:00 – 6:00 PM" }. For events that
+ * span days the time includes the end date ("9:00 PM – Sat, Nov 14, 1:00 AM"),
+ * and with no end time it's just the start ("5:00 PM").
  */
-export function formatSchedule(
+export function formatWhen(
   startsAt: string,
   endsAt: string | null,
-): string {
-  if (!endsAt) return formatDateTime(startsAt);
-  return dateTimeFormat.formatRange(new Date(startsAt), new Date(endsAt));
+): { date: string; time: string } {
+  const start = new Date(startsAt);
+  const date = longDateFormat.format(start);
+  if (!endsAt) return { date, time: timeFormat.format(start) };
+
+  const end = new Date(endsAt);
+  const sameDay = longDateFormat.format(end) === date;
+  return {
+    date,
+    time: sameDay
+      ? timeFormat.formatRange(start, end)
+      : `${timeFormat.format(start)} – ${dateTimeFormat.format(end)}`,
+  };
 }

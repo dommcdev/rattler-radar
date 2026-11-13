@@ -29,8 +29,6 @@ export default async function HomePage() {
 
         <EventFeed.Grid />
       </main>
-
-      <EventFeed.Details />
     </EventFeed.Provider>
   );
 }

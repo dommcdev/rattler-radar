@@ -5,7 +5,7 @@ import sanitizeHtml from "sanitize-html";
 import { loadEvents } from "@/lib/event-store";
 import type { RattlerTracksEvent } from "@/lib/rattlertracks";
 import type { EventFeedData, FeedEvent } from "./feed-event";
-import { formatDateParts, formatDateTime, formatSchedule } from "./format";
+import { formatDateParts, formatDateTime, formatWhen } from "./format";
 
 /** RattlerTracks' theme names, renamed to what students would call them. */
 const TOPIC_LABELS: Record<string, string> = {
@@ -26,6 +26,9 @@ const DESCRIPTION_HTML_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: ["p", "br", "strong", "b", "em", "i", "ul", "ol", "li", "a"],
   allowedAttributes: { a: ["href"] },
   allowedSchemes: ["http", "https", "mailto"],
+  // Organizers space paragraphs with empty ones (<p>&nbsp;</p>); drop them.
+  exclusiveFilter: (frame) =>
+    frame.tag === "p" && frame.text.replace(/&nbsp;| /g, "").trim() === "",
   transformTags: {
     a: sanitizeHtml.simpleTransform("a", {
       target: "_blank",
@@ -56,20 +59,28 @@ export async function getEventFeed(): Promise<EventFeedData> {
   return { events, lastSynced: formatDateTime(stored.syncedAt) };
 }
 
+/** One upcoming event, for its page. Null if it doesn't exist or has ended. */
+export async function getEvent(id: string): Promise<FeedEvent | null> {
+  const { events } = await getEventFeed();
+  return events.find((event) => event.id === id) ?? null;
+}
+
 function toFeedEvent(event: RattlerTracksEvent): FeedEvent {
   return {
     id: event.sourceId,
     url: event.url,
     title: event.title,
     startsAt: event.startsAt,
-    schedule: formatSchedule(event.startsAt, event.endsAt),
+    endsAt: event.endsAt,
+    when: formatWhen(event.startsAt, event.endsAt),
     start: formatDateParts(event.startsAt),
     location: event.location,
-    hosts: event.hosts.map((host) => host.name),
+    hosts: event.hosts,
     imageUrl: event.imageUrl,
     topic: event.theme ? (TOPIC_LABELS[event.theme] ?? event.theme) : null,
     categories: event.categories,
     hasFreeFood: event.benefits.includes(FREE_FOOD),
+    benefits: event.benefits,
     rsvpCount: event.rsvpCount,
     descriptionHtml: event.descriptionHtml
       ? sanitizeHtml(event.descriptionHtml, DESCRIPTION_HTML_OPTIONS)

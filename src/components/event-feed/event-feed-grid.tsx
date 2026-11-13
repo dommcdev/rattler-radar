@@ -24,7 +24,6 @@ const EAGER_CARD_COUNT = 4;
 export function EventFeedGrid() {
   const {
     state: { visibleEvents },
-    actions: { openEvent },
     meta: { totalCount },
   } = useEventFeed();
 
@@ -37,7 +36,6 @@ export function EventFeedGrid() {
         <EventCard
           key={event.id}
           event={event}
-          onOpen={() => openEvent(event.id)}
           loading={index < EAGER_CARD_COUNT ? "eager" : "lazy"}
         />
       ))}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { FeedEvent } from "@/lib/events/feed-event";
 import { EventFlyer, FlyerPlaceholder } from "./event-flyer";
 import { FreeFoodIcon } from "./free-food-badge";
@@ -10,19 +11,18 @@ const FLYER_FRAME = "aspect-[5/3] rounded-md ring-1 ring-border";
 
 interface EventCardProps {
   event: FeedEvent;
-  onOpen: () => void;
   /** Load the flyer right away (for cards visible without scrolling). */
   loading?: "eager" | "lazy";
 }
 
 /**
  * Flyer, then a date stamp beside the title and one quiet line with the time
- * and place. Hosts and the description live in the details panel.
+ * and place. Hosts and the description live on the event's page.
  *
- * The whole card is clickable: the title's button stretches over the card
- * with an `after:` overlay, so the button's accessible name is just the title.
+ * The whole card is clickable: the title's link stretches over the card
+ * with an `after:` overlay, so the link's accessible name is just the title.
  */
-export function EventCard({ event, onOpen, loading = "lazy" }: EventCardProps) {
+export function EventCard({ event, loading = "lazy" }: EventCardProps) {
   return (
     <article className="group relative">
       {event.imageUrl ? (
@@ -34,7 +34,7 @@ export function EventCard({ event, onOpen, loading = "lazy" }: EventCardProps) {
         />
       ) : (
         <FlyerPlaceholder
-          label={event.hosts.join(", ")}
+          label={event.hosts.map((host) => host.name).join(", ")}
           className={FLYER_FRAME}
         />
       )}
@@ -43,17 +43,20 @@ export function EventCard({ event, onOpen, loading = "lazy" }: EventCardProps) {
         <DateStamp event={event} />
         <div className="min-w-0 border-l pl-3.5">
           <h3 className="text-[15px] leading-snug font-semibold tracking-tight">
-            <button
-              type="button"
-              onClick={onOpen}
+            <Link
+              href={`/events/${event.id}`}
               className="line-clamp-2 text-left outline-none group-hover:underline group-hover:decoration-foreground/30 group-hover:underline-offset-4 after:absolute after:-inset-2 after:rounded-lg focus-visible:after:ring-2 focus-visible:after:ring-ring"
             >
               {event.title}
-            </button>
+            </Link>
           </h3>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="shrink-0">{event.start.time}</span>
+            <span aria-hidden className="text-muted-foreground/50">
+              ·
+            </span>
             <span className="truncate">
-              {event.start.time}, {event.location ?? "Location to be announced"}
+              {event.location ?? "Location to be announced"}
             </span>
             {event.hasFreeFood ? <FreeFoodIcon /> : null}
           </p>

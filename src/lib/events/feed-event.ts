@@ -10,18 +10,27 @@ export interface FeedEvent {
   title: string;
   /** ISO 8601 timestamp, for `<time dateTime>`. */
   startsAt: string;
-  /** Formatted in campus time, e.g. "Thu, Nov 12, 5:00 – 6:00 PM". */
-  schedule: string;
+  /** ISO 8601 timestamp, or null if RattlerTracks has no end time. */
+  endsAt: string | null;
+  /**
+   * Formatted in campus time, e.g. { date: "Thursday, November 12",
+   * time: "5:00 – 6:00 PM" }. For events that span days, the time includes
+   * the end date: "9:00 PM – Sat, Nov 14, 1:00 AM".
+   */
+  when: { date: string; time: string };
   /** The start, split up for the card's date stamp, e.g. "Nov", "12", "5:00 PM". */
   start: { month: string; day: string; time: string };
   location: string | null;
-  hosts: string[];
+  /** Organizations running the event. `id` is their RattlerTracks ID. */
+  hosts: { id: string; name: string }[];
   imageUrl: string | null;
   /** Broad category used for filtering, e.g. "Social" or "Sports". */
   topic: string | null;
   /** RattlerTracks' finer-grained categories, e.g. "Meeting". */
   categories: string[];
   hasFreeFood: boolean;
+  /** Perks RattlerTracks lists for the event, e.g. "Free Food", "Free Stuff". */
+  benefits: string[];
   rsvpCount: number | null;
   /** Sanitized HTML, safe to render. */
   descriptionHtml: string | null;
