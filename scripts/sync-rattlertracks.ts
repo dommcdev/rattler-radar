@@ -1,20 +1,13 @@
 /**
- * Fetches upcoming events from RattlerTracks and saves them to a JSON file.
+ * Fetches upcoming events from RattlerTracks and saves them to the event store.
  *
  * Usage: bun run sync:rattlertracks
  *
- * The file is replaced in a single step (write to a temp file, then rename),
- * so a failed sync never leaves partial data behind; the previous file stays as-is.
+ * If the sync fails, the previously stored events are left unchanged.
  */
-import { mkdir, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { saveEvents } from "@/lib/event-store";
 import { fetchUpcomingEvents } from "@/lib/rattlertracks";
-
-const OUTPUT_PATH = path.join(
-  process.cwd(),
-  "data",
-  "rattlertracks-events.json",
-);
 
 async function main() {
   const syncedAt = new Date();
@@ -35,21 +28,10 @@ async function main() {
     );
   }
 
-  await writeJsonAtomically(OUTPUT_PATH, {
-    syncedAt: syncedAt.toISOString(),
-    events,
-  });
-
+  const savedTo = await saveEvents(events, syncedAt);
   console.log(
-    `Saved ${events.length} events to ${path.relative(process.cwd(), OUTPUT_PATH)}`,
+    `Saved ${events.length} events to ${path.relative(process.cwd(), savedTo)}`,
   );
-}
-
-async function writeJsonAtomically(filePath: string, data: unknown) {
-  await mkdir(path.dirname(filePath), { recursive: true });
-  const tempPath = `${filePath}.tmp`;
-  await writeFile(tempPath, `${JSON.stringify(data, null, 2)}\n`);
-  await rename(tempPath, filePath);
 }
 
 main().catch((error) => {

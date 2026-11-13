@@ -5,4 +5,8 @@ export {
   RattlerTracksError,
   type SkippedEvent,
 } from "./client";
-export type { EventHost, RattlerTracksEvent } from "./normalize";
+export {
+  type EventHost,
+  type RattlerTracksEvent,
+  rattlerTracksEventSchema,
+} from "./normalize";

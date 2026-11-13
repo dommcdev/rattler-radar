@@ -1,38 +1,45 @@
+import { z } from "zod";
 import type { RawEvent } from "./schema";
 
 const EVENT_PAGE_BASE_URL = "https://stmarytx.campuslabs.com/engage/event";
 const IMAGE_BASE_URL = "https://se-images.campuslabs.com/clink/images";
 
-export interface EventHost {
-  id: string;
-  name: string;
-}
+export const eventHostSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
+export type EventHost = z.infer<typeof eventHostSchema>;
 
 /**
  * An event from RattlerTracks in our own format. Optional fields that are
  * missing upstream are `null`; list fields are empty arrays.
+ *
+ * Defined as a schema so stored events can be validated when read back.
  */
-export interface RattlerTracksEvent {
+export const rattlerTracksEventSchema = z.object({
   /** The RattlerTracks event id, which uniquely identifies the event there. */
-  sourceId: string;
-  url: string;
-  title: string;
+  sourceId: z.string(),
+  url: z.url(),
+  title: z.string(),
   /** Raw HTML from RattlerTracks. Must be sanitized before rendering. */
-  descriptionHtml: string | null;
+  descriptionHtml: z.string().nullable(),
   /** ISO 8601 timestamp in UTC. */
-  startsAt: string;
+  startsAt: z.iso.datetime(),
   /** ISO 8601 timestamp in UTC. */
-  endsAt: string | null;
-  location: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  imageUrl: string | null;
-  hosts: EventHost[];
-  theme: string | null;
-  categories: string[];
-  benefits: string[];
-  rsvpCount: number | null;
-}
+  endsAt: z.iso.datetime().nullable(),
+  location: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  imageUrl: z.url().nullable(),
+  hosts: z.array(eventHostSchema),
+  theme: z.string().nullable(),
+  categories: z.array(z.string()),
+  benefits: z.array(z.string()),
+  rsvpCount: z.number().int().nullable(),
+});
+
+export type RattlerTracksEvent = z.infer<typeof rattlerTracksEventSchema>;
 
 export function normalizeEvent(raw: RawEvent): RattlerTracksEvent {
   const imagePath = cleanText(raw.imagePath);
