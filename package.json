@@ -8,16 +8,20 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format:check": "biome format .",
+    "test": "bun test",
+    "sync:rattlertracks": "bun scripts/sync-rattlertracks.ts"
   },
   "dependencies": {
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
     "@tailwindcss/turbopack": "^4",
+    "@types/bun": "^1.4.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
