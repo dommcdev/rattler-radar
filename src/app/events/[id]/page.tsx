@@ -19,7 +19,7 @@ export async function generateMetadata({
   params,
 }: PageProps<"/events/[id]">): Promise<Metadata> {
   const event = await getEvent((await params).id);
-  return event ? { title: `${event.title} · RattlerEvents` } : {};
+  return event ? { title: `${event.title} · RattlerRadar` } : {};
 }
 
 /**

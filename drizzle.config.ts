@@ -1,7 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 import { defineConfig } from "drizzle-kit";
 
-// Load .env.local the same way Next.js does, so drizzle-kit sees the same database.
+// Load .env the same way Next.js does, so drizzle-kit sees the same database.
 loadEnvConfig(process.cwd());
 
 const url = process.env.DATABASE_URL;

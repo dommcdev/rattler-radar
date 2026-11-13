@@ -16,7 +16,7 @@ export const SEARCH_URL =
   "https://stmarytx.campuslabs.com/engage/api/discovery/event/search";
 
 const USER_AGENT =
-  "RattlerEvents/0.1 (student project; daily campus event sync)";
+  "RattlerRadar/0.1 (student project; daily campus event sync)";
 const PAGE_SIZE = 100;
 const PAGE_DELAY_MS = 500;
 const REQUEST_TIMEOUT_MS = 15_000;

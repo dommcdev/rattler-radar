@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "RattlerEvents",
+  title: "RattlerRadar",
   description: "Everything happening at St. Mary's University, in one place.",
 };
 

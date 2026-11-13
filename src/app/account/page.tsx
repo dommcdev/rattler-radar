@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { signOut } from "@/lib/auth-actions";
 import { requireSession } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Account · RattlerEvents" };
+export const metadata: Metadata = { title: "Account · RattlerRadar" };
 
 /**
  * Account-only. Interests and notification

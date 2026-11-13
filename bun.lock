@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "rattler-events",
+      "name": "rattler-radar",
       "dependencies": {
         "@base-ui/react": "^1.9.0",
         "@better-auth/drizzle-adapter": "^1.7.22",

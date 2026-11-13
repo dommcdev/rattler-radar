@@ -1,10 +1,10 @@
-# RattlerEvents
+# RattlerRadar
 
 ## Getting Started
 
 ```bash
-cp .env.example .env.local   # then fill it in (see "Sign-in" below)
-bun run db:push              # creates data/rattlerevents.db
+cp .env.example .env   # then fill it in (see "Sign-in" below)
+bun run db:push              # creates data/rattlerradar.db
 bun run sync:rattlertracks   # saves events to data/rattlertracks-events.json
 bun dev
 ```
@@ -47,7 +47,7 @@ To make a page account-only, call `requireSession()` in it.
 **Google credentials:** in Google Cloud Console, create an OAuth client ID
 (type "Web application") with the redirect URI
 `http://localhost:3000/api/auth/callback/google`, then put the client ID and
-secret in `.env.local`.
+secret in `.env`.
 
 **Database:** `DATABASE_URL` is a local file in development. To use Turso,
 set it to the `libsql://…` URL and add `DATABASE_AUTH_TOKEN`; no code changes.

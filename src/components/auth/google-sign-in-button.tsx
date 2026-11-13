@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import { SIGN_IN_PAGE } from "@/lib/sign-in-path";
@@ -30,10 +31,11 @@ export function GoogleSignInButton({ returnTo }: { returnTo: string }) {
   }
 
   return (
-    <div className="space-y-2">
+    <>
       <Button
-        size="lg"
-        className="h-10 w-full text-sm"
+        variant="outline"
+        className="h-10 w-full gap-2 text-sm"
+        type="button"
         onClick={signIn}
         disabled={isPending}
       >
@@ -41,24 +43,38 @@ export function GoogleSignInButton({ returnTo }: { returnTo: string }) {
         Continue with Google
       </Button>
       {failed ? (
-        <p role="alert" className="text-center text-sm text-destructive">
+        <FieldError className="text-center">
           Couldn't reach Google. Check your connection and try again.
-        </p>
+        </FieldError>
       ) : null}
-    </div>
+    </>
   );
 }
 
-/** Google's "G" in one color (Lucide has no brand icons). */
+/** Google's full-color "G" (Lucide has no brand icons). */
 function GoogleIcon() {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="currentColor"
       aria-hidden="true"
-      data-icon="inline-start"
     >
-      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.1A6.6 6.6 0 0 1 5.49 12c0-.73.13-1.44.35-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.77.43 3.45 1.18 4.94l3.66-2.84z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+      />
     </svg>
   );
 }

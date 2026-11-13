@@ -3,10 +3,10 @@ import { z } from "zod";
 /**
  * Server-side environment variables, validated once at startup so a missing
  * value fails loudly instead of causing confusing errors later.
- * Set them in `.env.local` (see `.env.example`).
+ * Set them in `.env` (see `.env.example`).
  */
 const envSchema = z.object({
-  /** A local SQLite file (`file:data/rattlerevents.db`) or a Turso URL (`libsql://…`). */
+  /** A local SQLite file (`file:data/rattlerradar.db`) or a Turso URL (`libsql://…`). */
   DATABASE_URL: z.string().min(1),
   /** Only needed for Turso. */
   DATABASE_AUTH_TOKEN: z.string().min(1).optional(),
