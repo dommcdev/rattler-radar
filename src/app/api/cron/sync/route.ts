@@ -3,8 +3,11 @@ import { env } from "@/lib/env";
 import { EVENTS_CACHE_TAG } from "@/lib/events/get-event-feed";
 import { syncRattlerTracks } from "@/lib/sync-rattlertracks";
 
-/** Fetching, tagging, and saving takes a few seconds; leave room for retries. */
-export const maxDuration = 60;
+/**
+ * Fetching, tagging, and saving takes a few seconds (only new or changed
+ * events are sent to Jev); leave room for retries and a big first sync.
+ */
+export const maxDuration = 300;
 
 /**
  * The daily RattlerTracks sync, called by Vercel Cron (see `vercel.json`).
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
       );
     }
     console.log(
-      `RattlerTracks sync: saved ${result.saved}, removed ${result.removed}, skipped ${result.skipped.length}.`,
+      `RattlerTracks sync: saved ${result.saved}, tagged ${result.tagged}, removed ${result.removed}, skipped ${result.skipped.length}.`,
     );
     return Response.json(result);
   } catch (error) {

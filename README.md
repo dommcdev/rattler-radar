@@ -5,7 +5,7 @@
 ```bash
 cp .env.example .env   # then fill it in (see "Sign-in" below)
 bun run db:push              # creates data/rattlerradar.db
-bun run sync:rattlertracks   # saves and tags events in the database
+bun run sync:rattlertracks   # saves and tags events (needs TYPESAFE_AI_API_KEY)
 bun dev
 ```
 
@@ -16,7 +16,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ```
 RattlerTracks API
   → src/lib/rattlertracks/        fetch + validate + normalize (RattlerTracksEvent)
-  → src/lib/events/tag-event.ts   tag with interests (rules for now; AI model later)
+  → src/lib/events/tag-event.ts   tag with Jev: tags, audience, free food/stuff
   → src/lib/event-store.ts        save/load the event tables
   → src/lib/events/get-event-feed.ts
                                   upcoming events only, sanitized, formatted
@@ -24,6 +24,14 @@ RattlerTracks API
   → src/app/page.tsx              home page
   → src/components/event-feed/    search, filters, cards, details panel
 ```
+
+**Tags:** `src/lib/interests.ts` is the one tag list, used for onboarding,
+filter pills, search, and scoring. Jev (TypeSafe AI's decision model) asks
+one yes/no question per tag about each event's title, hosts, location, and
+description; RattlerTracks' own themes and categories are ignored. Only new
+or changed events are sent to Jev on each sync. After changing the tag list
+or questions, bump `TAGGER_VERSION` and run `bun run tag:events` (prints
+each event's tags for spot-checking; `--all` re-tags everything).
 
 **Daily sync:** Vercel Cron calls `/api/cron/sync` every day at 12:00 UTC
 (6 AM campus time in winter, 7 AM in summer; see `vercel.json`). It runs

@@ -21,6 +21,11 @@ const envSchema = z.object({
    * sync route refuses every request. Generate with `openssl rand -base64 32`.
    */
   CRON_SECRET: z.string().min(16).optional(),
+  /**
+   * TypeSafe AI key for Jev, which tags events during syncs
+   * (console.typesafe.ai/settings/keys). The website runs without it.
+   */
+  TYPESAFE_AI_API_KEY: z.string().min(1).optional(),
 });
 
 export const env = envSchema.parse(process.env);

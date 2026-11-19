@@ -6,6 +6,7 @@ import {
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
+import { AUDIENCES } from "@/lib/events/tagging";
 import { user } from "./auth";
 
 /**
@@ -44,14 +45,21 @@ export const event = sqliteTable(
     hosts: text("hosts", { mode: "json" })
       .$type<{ id: string; name: string }[]>()
       .notNull(),
-    theme: text("theme"),
-    categories: text("categories", { mode: "json" })
-      .$type<string[]>()
-      .notNull(),
+    /** Perks the organizer listed on RattlerTracks, e.g. "Free Food". */
     benefits: text("benefits", { mode: "json" }).$type<string[]>().notNull(),
     rsvpCount: integer("rsvp_count"),
     /** Events that repeat (same hosts, same title apart from numbers and dates) share a key. See `series.ts`. */
     seriesKey: text("series_key").notNull(),
+    // Written by the tagger (`tag-event.ts`), along with `event_tag`.
+    /** Who the event is for. Null until tagged. */
+    audience: text("audience", { enum: AUDIENCES }),
+    /** Perks Jev found in the description that the organizer may not have listed. */
+    detectedBenefits: text("detected_benefits", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default([]),
+    /** `taggingHash` of what was tagged; when it changes, the event is tagged again. */
+    taggingHash: text("tagging_hash"),
   },
   (table) => [
     index("event_starts_at_idx").on(table.startsAt),

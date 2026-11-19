@@ -3,7 +3,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEventFeed } from "./event-feed-context";
 
-/** "All", "Free food", then one pill per topic. Scrolls sideways on phones. */
+/** "All", "Free food", then one pill per tag. Scrolls sideways on phones. */
 export function EventFeedFilters() {
   const {
     state: { filterId },

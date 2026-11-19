@@ -12,6 +12,8 @@
  * The weights are hand-tuned guesses, kept here so they're easy to adjust.
  */
 
+import type { Audience } from "./tagging";
+
 const DAY_MS = 86_400_000;
 
 export const WEIGHTS = {
@@ -29,6 +31,13 @@ export const WEIGHTS = {
   /** They opened this event's page / clicked to RSVP to it. */
   viewedThis: 0.4,
   rsvpedThis: 0.8,
+  /**
+   * Interest matches count this much for events most students can't go to
+   * or wouldn't fit in: members-only events, and law school events for
+   * students who didn't pick "law". History with the series or host still
+   * counts in full, so members keep seeing their own club's events.
+   */
+  narrowAudience: 0.3,
   /** Days until the score halves (1 / (1 + days / this)). */
   distanceDays: 30,
 };
@@ -46,6 +55,7 @@ export interface ScorableEvent {
   seriesKey: string;
   hostIds: string[];
   tags: { tagId: string; confidence: number }[];
+  audience: Audience | null;
 }
 
 export interface Interaction {
@@ -90,10 +100,14 @@ export function scoreEvents(
     const matched = event.tags
       .filter((tag) => interests.has(tag.tagId))
       .toSorted((a, b) => b.confidence - a.confidence);
-    const interest = Math.min(
-      WEIGHTS.interestCap,
-      matched.reduce((sum, tag) => sum + tag.confidence, 0),
-    );
+    const narrow =
+      event.audience === "members" ||
+      (event.audience === "law" && !interests.has("law"));
+    const interest =
+      Math.min(
+        WEIGHTS.interestCap,
+        matched.reduce((sum, tag) => sum + tag.confidence, 0),
+      ) * (narrow ? WEIGHTS.narrowAudience : 1);
 
     const seriesCount = pastRsvps.filter(
       (i) => i.seriesKey === event.seriesKey && i.eventId !== event.id,

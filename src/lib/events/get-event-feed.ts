@@ -6,20 +6,7 @@ import { loadUpcomingEvents, type StoredEvent } from "@/lib/event-store";
 import type { EventDetails, EventFeedData, FeedEvent } from "./feed-event";
 import { formatDateParts, formatDateTime, formatWhen } from "./format";
 import type { EventTag } from "./tag-event";
-
-/** RattlerTracks' theme names, renamed to what students would call them. */
-const TOPIC_LABELS: Record<string, string> = {
-  Athletics: "Sports",
-  Social: "Social",
-  GroupBusiness: "Club meetings",
-  Fundraising: "Fundraisers",
-  ThoughtfulLearning: "Learning",
-  CommunityService: "Service",
-  Cultural: "Culture",
-  Spirituality: "Faith",
-};
-
-const FREE_FOOD = "Free Food";
+import { type Audience, FREE_FOOD, SHOWN_TAG_MIN_CONFIDENCE } from "./tagging";
 
 /** Formatting RattlerTracks descriptions use; anything else is stripped. */
 const DESCRIPTION_HTML_OPTIONS: sanitizeHtml.IOptions = {
@@ -83,6 +70,7 @@ export interface EventSignals {
   seriesKey: string;
   hostIds: string[];
   tags: EventTag[];
+  audience: Audience | null;
 }
 
 export async function getUpcomingEventSignals(): Promise<EventSignals[]> {
@@ -93,10 +81,13 @@ export async function getUpcomingEventSignals(): Promise<EventSignals[]> {
     seriesKey: event.seriesKey,
     hostIds: event.hosts.map((host) => host.id),
     tags: event.tags,
+    audience: event.audience,
   }));
 }
 
 function toFeedEvent(event: StoredEvent): FeedEvent {
+  // The organizer's perks first, then any Jev found that they didn't list.
+  const benefits = [...new Set([...event.benefits, ...event.detectedBenefits])];
   const startsAt = event.startsAt.toISOString();
   const endsAt = event.endsAt?.toISOString() ?? null;
   return {
@@ -111,10 +102,12 @@ function toFeedEvent(event: StoredEvent): FeedEvent {
     location: event.location,
     hosts: event.hosts,
     imageUrl: event.imageUrl,
-    topic: event.theme ? (TOPIC_LABELS[event.theme] ?? event.theme) : null,
-    categories: event.categories,
-    hasFreeFood: event.benefits.includes(FREE_FOOD),
-    benefits: event.benefits,
+    tags: event.tags
+      .filter((tag) => tag.confidence >= SHOWN_TAG_MIN_CONFIDENCE)
+      .map((tag) => tag.tagId),
+    audience: event.audience,
+    hasFreeFood: benefits.includes(FREE_FOOD),
+    benefits,
     rsvpCount: event.rsvpCount,
   };
 }

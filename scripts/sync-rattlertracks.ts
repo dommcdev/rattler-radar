@@ -10,14 +10,16 @@
 import { syncRattlerTracks } from "@/lib/sync-rattlertracks";
 
 async function main() {
-  const { saved, removed, skipped } = await syncRattlerTracks();
+  const { saved, removed, tagged, skipped } = await syncRattlerTracks({
+    onProgress: (done, total) => console.log(`Tagged ${done}/${total}`),
+  });
   for (const event of skipped) {
     console.warn(
       `Skipped invalid event ${event.id ?? "(no id)"}: ${event.reason}`,
     );
   }
   console.log(
-    `Saved ${saved} events; removed ${removed} that are no longer listed.`,
+    `Saved ${saved} events (${tagged} new or changed, tagged with Jev); removed ${removed} that are no longer listed.`,
   );
 }
 

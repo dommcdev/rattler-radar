@@ -22,6 +22,7 @@ function upcoming(
     seriesKey: `series-${id}`,
     hostIds: [`host-${id}`],
     tags: [],
+    audience: "everyone",
     ...extra,
   };
 }
@@ -56,11 +57,11 @@ describe("scoreEvents", () => {
 
   test("an interest match 3 months out is for you but not in the top section", () => {
     const event = upcoming("law", 90, {
-      tags: [{ tagId: "pre-law", confidence: 0.9 }],
+      tags: [{ tagId: "law", confidence: 0.9 }],
     });
     const [result] = scoreEvents(
       [event],
-      { interests: ["pre-law"], interactions: [] },
+      { interests: ["law"], interactions: [] },
       NOW,
     );
     expect(result.affinity).toBeGreaterThanOrEqual(FOR_YOU_MIN_AFFINITY);
@@ -82,30 +83,75 @@ describe("scoreEvents", () => {
   test("a strong match on several interests this week is in the top section", () => {
     const event = upcoming("panel", 3, {
       tags: [
-        { tagId: "pre-law", confidence: 0.9 },
-        { tagId: "speakers", confidence: 0.7 },
+        { tagId: "law", confidence: 0.9 },
+        { tagId: "talks", confidence: 0.7 },
       ],
     });
     const [result] = scoreEvents(
       [event],
-      { interests: ["pre-law", "speakers"], interactions: [] },
+      { interests: ["law", "talks"], interactions: [] },
       NOW,
     );
     expect(result.score).toBeGreaterThanOrEqual(MIGHT_LIKE_MIN_SCORE);
     expect(result.reason).toEqual({
       kind: "interests",
-      tagIds: ["pre-law", "speakers"],
+      tagIds: ["law", "talks"],
     });
   });
 
   test("unrelated events aren't for you", () => {
     const [result] = scoreEvents(
-      [upcoming("other", 1, { tags: [{ tagId: "gaming", confidence: 0.8 }] })],
-      { interests: ["pre-law"], interactions: [] },
+      [upcoming("other", 1, { tags: [{ tagId: "games", confidence: 0.8 }] })],
+      { interests: ["law"], interactions: [] },
       NOW,
     );
     expect(result.affinity).toBe(0);
     expect(result.reason).toEqual({ kind: "none" });
+  });
+
+  test("members-only events barely count on interests alone", () => {
+    const tags = [{ tagId: "greek", confidence: 0.9 }];
+    const user = { interests: ["greek"], interactions: [] };
+    const [open] = scoreEvents([upcoming("open", 2, { tags })], user, NOW);
+    const [members] = scoreEvents(
+      [upcoming("chapter", 2, { tags, audience: "members" })],
+      user,
+      NOW,
+    );
+    expect(open.affinity).toBeGreaterThanOrEqual(FOR_YOU_MIN_AFFINITY);
+    expect(members.affinity).toBeLessThan(FOR_YOU_MIN_AFFINITY);
+  });
+
+  test("members still see their own chapter's meetings", () => {
+    const event = upcoming("chapter", 7, {
+      seriesKey: "dz|chapter",
+      hostIds: ["dz"],
+      audience: "members",
+    });
+    const interactions = [1, 2].map((n) =>
+      pastRsvp(`old-${n}`, "dz|chapter", "dz"),
+    );
+    const [result] = scoreEvents([event], { interests: [], interactions }, NOW);
+    expect(result.affinity).toBeGreaterThanOrEqual(FOR_YOU_MIN_AFFINITY);
+  });
+
+  test("law school events count for students who picked law", () => {
+    const event = upcoming("sba", 2, {
+      tags: [{ tagId: "social", confidence: 0.9 }],
+      audience: "law",
+    });
+    const [undergrad] = scoreEvents(
+      [event],
+      { interests: ["social"], interactions: [] },
+      NOW,
+    );
+    const [lawStudent] = scoreEvents(
+      [event],
+      { interests: ["social", "law"], interactions: [] },
+      NOW,
+    );
+    expect(undergrad.affinity).toBeLessThan(FOR_YOU_MIN_AFFINITY);
+    expect(lawStudent.affinity).toBeGreaterThanOrEqual(FOR_YOU_MIN_AFFINITY);
   });
 
   test("viewing a page many times counts once", () => {

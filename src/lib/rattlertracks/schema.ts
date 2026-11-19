@@ -29,8 +29,6 @@ export const rawEventSchema = z.object({
   organizationName: z.string().nullish(),
   organizationIds: z.array(z.string()).nullish(),
   organizationNames: z.array(z.string()).nullish(),
-  theme: z.string().nullish(),
-  categoryNames: z.array(z.string()).nullish(),
   benefitNames: z.array(z.string()).nullish(),
   rsvpTotal: z.number().int().nullish(),
 });

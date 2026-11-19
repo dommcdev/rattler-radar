@@ -33,8 +33,6 @@ export const rattlerTracksEventSchema = z.object({
   longitude: z.number().nullable(),
   imageUrl: z.url().nullable(),
   hosts: z.array(eventHostSchema),
-  theme: z.string().nullable(),
-  categories: z.array(z.string()),
   benefits: z.array(z.string()),
   rsvpCount: z.number().int().nullable(),
 });
@@ -58,8 +56,6 @@ export function normalizeEvent(raw: RawEvent): RattlerTracksEvent {
     longitude: parseCoordinate(raw.longitude),
     imageUrl: isImage ? `${IMAGE_BASE_URL}/${imagePath}` : null,
     hosts: toHosts(raw),
-    theme: cleanText(raw.theme),
-    categories: cleanList(raw.categoryNames),
     benefits: cleanList(raw.benefitNames),
     rsvpCount: raw.rsvpTotal ?? null,
   };

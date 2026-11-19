@@ -9,9 +9,9 @@
  */
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { event, eventTag } from "@/db/schema";
-import { toEventRow } from "@/lib/event-store";
-import { tagEvent } from "@/lib/events/tag-event";
+import { event } from "@/db/schema";
+import { runBatch, taggingStatements, toEventRow } from "@/lib/event-store";
+import { tagEvents, taggingHash } from "@/lib/events/tag-event";
 import {
   fetchUpcomingEvents,
   type RattlerTracksEvent,
@@ -19,8 +19,9 @@ import {
 
 async function main() {
   // Interactions and tags go with the events (ON DELETE CASCADE).
-  await db.delete(event).where(eq(event.source, "demo"));
+  const removeDemoEvents = db.delete(event).where(eq(event.source, "demo"));
   if (process.argv.includes("--remove")) {
+    await removeDemoEvents;
     console.log("Removed all demo events.");
     return;
   }
@@ -37,24 +38,22 @@ async function main() {
   );
 
   const shifted = past.map(nextYear);
-  const tagged = await Promise.all(
-    shifted.map(async (e) => ({ e, tags: await tagEvent(e) })),
-  );
-  const statements = tagged.flatMap(({ e, tags }) => {
+  const taggings = await tagEvents(shifted, {
+    onProgress: (done, total) => console.log(`Tagged ${done}/${total}`),
+  });
+  // Tagged before anything is deleted, so a failure leaves the old demo events.
+  const statements = shifted.flatMap((e, i) => {
     const id = `demo-${e.sourceId}`;
     return [
       db.insert(event).values(toEventRow(e, { id, source: "demo" })),
-      ...(tags.length > 0
-        ? [db.insert(eventTag).values(tags.map((t) => ({ eventId: id, ...t })))]
-        : []),
+      ...taggingStatements(id, taggings[i], taggingHash(e)),
     ];
   });
   if (statements.length === 0) {
     console.log("RattlerTracks returned no past events; nothing to add.");
     return;
   }
-  const [first, ...rest] = statements;
-  await db.batch([first, ...rest]);
+  await runBatch([removeDemoEvents, ...statements]);
 
   console.log(
     `Added ${shifted.length} demo events (${shifted[0].startsAt.slice(0, 10)} to ${shifted.at(-1)?.startsAt.slice(0, 10)}).`,

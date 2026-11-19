@@ -1,9 +1,11 @@
-import { saveRattlerTracksEvents } from "@/lib/event-store";
+import { saveRattlerTracksEvents, type TagProgress } from "@/lib/event-store";
 import { fetchUpcomingEvents } from "@/lib/rattlertracks";
 
 export interface SyncResult {
   saved: number;
   removed: number;
+  /** New or changed events tagged with Jev; the rest kept their tags. */
+  tagged: number;
   /** Events RattlerTracks returned that failed validation. */
   skipped: { id: string | null; reason: string }[];
 }
@@ -14,7 +16,9 @@ export interface SyncResult {
  * `bun run sync:rattlertracks`. If it throws, the stored events are left
  * unchanged.
  */
-export async function syncRattlerTracks(): Promise<SyncResult> {
+export async function syncRattlerTracks(
+  options: TagProgress = {},
+): Promise<SyncResult> {
   const syncedAt = new Date();
   const { events, skipped } = await fetchUpcomingEvents({
     endsAfter: syncedAt,
@@ -25,6 +29,10 @@ export async function syncRattlerTracks(): Promise<SyncResult> {
       );
     },
   });
-  const { saved, removed } = await saveRattlerTracksEvents(events, syncedAt);
-  return { saved, removed, skipped };
+  const { saved, removed, tagged } = await saveRattlerTracksEvents(
+    events,
+    syncedAt,
+    options,
+  );
+  return { saved, removed, tagged, skipped };
 }

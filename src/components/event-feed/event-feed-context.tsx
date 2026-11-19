@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import type { FeedEvent } from "@/lib/events/feed-event";
+import { interestLabel } from "@/lib/interests";
 
 /** A filter chip: which events it keeps. */
 export interface FeedFilter {
@@ -48,25 +49,25 @@ export function useEventFeed(): EventFeedContextValue {
 
 const ALL_FILTER_ID = "all";
 
-/** "All" and "Free food", then one filter per topic, most common first. */
+/** "All" and "Free food", then one filter per tag, most common first. */
 function buildFilters(events: FeedEvent[]): FeedFilter[] {
-  const topicCounts = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
   for (const event of events) {
-    if (event.topic) {
-      topicCounts.set(event.topic, (topicCounts.get(event.topic) ?? 0) + 1);
+    for (const tagId of event.tags) {
+      tagCounts.set(tagId, (tagCounts.get(tagId) ?? 0) + 1);
     }
   }
-  const topics = [...topicCounts.entries()]
+  const tagIds = [...tagCounts.entries()]
     .toSorted(([, a], [, b]) => b - a)
-    .map(([topic]) => topic);
+    .map(([tagId]) => tagId);
 
   return [
     { id: ALL_FILTER_ID, label: "All", matches: () => true },
     { id: "free-food", label: "Free food", matches: (e) => e.hasFreeFood },
-    ...topics.map((topic) => ({
-      id: `topic:${topic}`,
-      label: topic,
-      matches: (e: FeedEvent) => e.topic === topic,
+    ...tagIds.map((tagId) => ({
+      id: `tag:${tagId}`,
+      label: interestLabel(tagId),
+      matches: (e: FeedEvent) => e.tags.includes(tagId),
     })),
   ];
 }
@@ -75,9 +76,9 @@ function searchableText(event: FeedEvent): string {
   return [
     event.title,
     event.location,
-    event.topic,
     ...event.hosts.map((host) => host.name),
-    ...event.categories,
+    ...event.tags.map(interestLabel),
+    ...event.benefits,
   ]
     .filter(Boolean)
     .join(" ")

@@ -2,6 +2,7 @@ import { CalendarIcon, MapPinIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import type { FeedEvent } from "@/lib/events/feed-event";
 import { directionsUrl, googleCalendarUrl } from "@/lib/events/links";
+import { interestLabel } from "@/lib/interests";
 import { cn } from "@/lib/utils";
 import { PerkIcon, perkLabel } from "./perks";
 import { RsvpLink } from "./rsvp-link";
@@ -9,7 +10,7 @@ import { RsvpLink } from "./rsvp-link";
 /**
  * The event page's practical half: when, where, and how to go. Reads top to
  * bottom in that order, with the date as the biggest thing in the card, and
- * the event's perks (free food, etc.) as pills underneath.
+ * the event's perks (free food, etc.) and tags as pills underneath.
  */
 export function EventDetailsCard({ event }: { event: FeedEvent }) {
   return (
@@ -75,14 +76,15 @@ export function EventDetailsCard({ event }: { event: FeedEvent }) {
         </div>
       </div>
 
-      {/* Perks, as pills. Free food (the big draw) gets a gold tint. */}
-      {event.benefits.length > 0 ? (
+      {/* Perks, then tags, as pills. Free food (the big draw) gets a gold tint. */}
+      {event.benefits.length > 0 || event.tags.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {event.benefits.map((benefit) => (
             <li
               key={benefit}
               className={cn(
-                "inline-flex h-7 items-center gap-1.5 rounded-full border px-3 text-xs font-medium",
+                PILL,
+                "font-medium",
                 benefit === "Free Food" && "border-gold/40 bg-gold/10",
               )}
             >
@@ -90,11 +92,19 @@ export function EventDetailsCard({ event }: { event: FeedEvent }) {
               {perkLabel(benefit)}
             </li>
           ))}
+          {event.tags.map((tagId) => (
+            <li key={tagId} className={cn(PILL, "text-muted-foreground")}>
+              {interestLabel(tagId)}
+            </li>
+          ))}
         </ul>
       ) : null}
     </>
   );
 }
+
+const PILL =
+  "inline-flex h-7 items-center gap-1.5 rounded-full border px-3 text-xs";
 
 function GoingCount({ count }: { count: number }) {
   return (

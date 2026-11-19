@@ -25,8 +25,6 @@ describe("normalizeEvent", () => {
         organizationName: "Fangs Forward",
         organizationIds: [],
         organizationNames: [],
-        theme: "GroupBusiness",
-        categoryNames: ["Meeting"],
         benefitNames: ["Free Food"],
         rsvpTotal: 4,
       }),
@@ -44,8 +42,6 @@ describe("normalizeEvent", () => {
       longitude: -98.56156,
       imageUrl: "https://se-images.campuslabs.com/clink/images/abc.png",
       hosts: [{ id: "428668", name: "Fangs Forward" }],
-      theme: "GroupBusiness",
-      categories: ["Meeting"],
       benefits: ["Free Food"],
       rsvpCount: 4,
     });
@@ -62,8 +58,6 @@ describe("normalizeEvent", () => {
       longitude: null,
       imageUrl: null,
       hosts: [],
-      theme: null,
-      categories: [],
       benefits: [],
       rsvpCount: null,
     });

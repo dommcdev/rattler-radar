@@ -1,4 +1,5 @@
 import type { EventSource } from "@/db/schema";
+import type { Audience } from "./tagging";
 
 /**
  * The shape of an event as the website displays it. Built on the server from
@@ -28,12 +29,18 @@ export interface FeedEvent {
   /** Organizations running the event. `id` is their RattlerTracks ID. */
   hosts: { id: string; name: string }[];
   imageUrl: string | null;
-  /** Broad category used for filtering, e.g. "Social" or "Sports". */
-  topic: string | null;
-  /** RattlerTracks' finer-grained categories, e.g. "Meeting". */
-  categories: string[];
+  /**
+   * Tag IDs from `src/lib/interests.ts` that Jev is fairly sure of, most
+   * certain first. Used for the filter pills, search, and the tag pills.
+   */
+  tags: string[];
+  /** Who it's for. Null if the event hasn't been tagged yet. */
+  audience: Audience | null;
   hasFreeFood: boolean;
-  /** Perks RattlerTracks lists for the event, e.g. "Free Food", "Free Stuff". */
+  /**
+   * Perks, e.g. "Free Food", "Free Stuff": what the organizer listed on
+   * RattlerTracks, plus any Jev found in the description.
+   */
   benefits: string[];
   rsvpCount: number | null;
 }
