@@ -16,6 +16,11 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url(),
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
+  /**
+   * Vercel sends this with each cron call (see `vercel.json`). Without it the
+   * sync route refuses every request. Generate with `openssl rand -base64 32`.
+   */
+  CRON_SECRET: z.string().min(16).optional(),
 });
 
 export const env = envSchema.parse(process.env);

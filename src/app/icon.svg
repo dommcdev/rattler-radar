@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Same mark as src/components/logo.tsx. -->
+  <style>
+    .body { fill: #0d4d84; }
+    .tip { fill: #efba31; }
+    @media (prefers-color-scheme: dark) {
+      .body { fill: #efba31; }
+      .tip { fill: #ffffff; }
+    }
+  </style>
+  <g transform="rotate(30 16 16)">
+    <rect class="body" x="7" y="22" width="18" height="8" rx="4" />
+    <rect class="body" x="9" y="14.5" width="14" height="6.5" rx="3.25" />
+    <rect class="body" x="11" y="8" width="10" height="5.5" rx="2.75" />
+    <rect class="tip" x="13" y="2.5" width="6" height="4.5" rx="2.25" />
+  </g>
+</svg>

@@ -1,3 +1,5 @@
+import type { EventSource } from "@/db/schema";
+
 /**
  * The shape of an event as the website displays it. Built on the server from
  * stored RattlerTracks events (see `get-event-feed.ts`) and passed to client
@@ -5,6 +7,8 @@
  */
 export interface FeedEvent {
   id: string;
+  /** Where the event came from. Only "rattlertracks" so far. */
+  source: EventSource;
   /** The event's page on RattlerTracks, where students RSVP. */
   url: string;
   title: string;
@@ -32,6 +36,10 @@ export interface FeedEvent {
   /** Perks RattlerTracks lists for the event, e.g. "Free Food", "Free Stuff". */
   benefits: string[];
   rsvpCount: number | null;
+}
+
+/** An event with everything its page shows. Lists leave the description out to stay small. */
+export interface EventDetails extends FeedEvent {
   /** Sanitized HTML, safe to render. */
   descriptionHtml: string | null;
 }
@@ -41,3 +49,17 @@ export interface EventFeedData {
   /** When events were last synced from RattlerTracks, formatted in campus time. */
   lastSynced: string | null;
 }
+
+/** Which time header an event sits under in "Upcoming events for you". */
+export type TimeGroup = "soon" | "next-month" | "distant";
+
+export type PersonalFeed =
+  /** Nothing to go on yet: no interests and no history. */
+  | { kind: "empty" }
+  | {
+      kind: "ready";
+      /** "Events you might like", best first. */
+      mightLike: { id: string }[];
+      /** Every "for you" event, soonest first. */
+      forYou: { id: string; group: TimeGroup }[];
+    };

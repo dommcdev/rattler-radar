@@ -1,9 +1,10 @@
-import { CalendarIcon, ExternalLinkIcon, MapPinIcon } from "lucide-react";
+import { CalendarIcon, MapPinIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import type { FeedEvent } from "@/lib/events/feed-event";
 import { directionsUrl, googleCalendarUrl } from "@/lib/events/links";
 import { cn } from "@/lib/utils";
 import { PerkIcon, perkLabel } from "./perks";
+import { RsvpLink } from "./rsvp-link";
 
 /**
  * The event page's practical half: when, where, and how to go. Reads top to
@@ -51,16 +52,8 @@ export function EventDetailsCard({ event }: { event: FeedEvent }) {
 
         {/* Go */}
         <div className="space-y-2 border-t p-4">
-          {/* Links styled as buttons (Base UI's Button is for buttons only). */}
-          <a
-            href={event.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ size: "lg", className: "w-full" })}
-          >
-            RSVP on RattlerTracks
-            <ExternalLinkIcon data-icon="inline-end" />
-          </a>
+          <RsvpLink eventId={event.id} url={event.url} />
+          {/* A link styled as a button (Base UI's Button is for buttons only). */}
           <a
             href={googleCalendarUrl(event)}
             target="_blank"

@@ -7,3 +7,5 @@
  * Add the app's own tables in separate files here.
  */
 export * from "./auth";
+export * from "./events";
+export * from "./interests";

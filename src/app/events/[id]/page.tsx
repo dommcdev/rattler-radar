@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { EventFlyer } from "@/components/event-feed/event-flyer";
 import { EventDetailsCard } from "@/components/event-page/event-details-card";
 import { EventHosts } from "@/components/event-page/event-hosts";
+import { TrackEventView } from "@/components/event-page/track-event-view";
 import { SiteHeader } from "@/components/site-header";
 import { getEvent, getEventFeed } from "@/lib/events/get-event-feed";
 
@@ -34,6 +35,7 @@ export default async function EventPage({ params }: PageProps<"/events/[id]">) {
   return (
     <>
       <SiteHeader />
+      <TrackEventView eventId={event.id} />
       <main className="mx-auto w-full max-w-[1100px] px-4 pt-5 pb-16 sm:px-6">
         <Link
           href="/"

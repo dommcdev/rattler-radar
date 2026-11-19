@@ -5,7 +5,7 @@
 ```bash
 cp .env.example .env   # then fill it in (see "Sign-in" below)
 bun run db:push              # creates data/rattlerradar.db
-bun run sync:rattlertracks   # saves events to data/rattlertracks-events.json
+bun run sync:rattlertracks   # saves and tags events in the database
 bun dev
 ```
 
@@ -16,13 +16,22 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ```
 RattlerTracks API
   → src/lib/rattlertracks/        fetch + validate + normalize (RattlerTracksEvent)
-  → src/lib/event-store.ts        save/load the JSON file (stand-in for a database)
+  → src/lib/events/tag-event.ts   tag with interests (rules for now; AI model later)
+  → src/lib/event-store.ts        save/load the event tables
   → src/lib/events/get-event-feed.ts
                                   upcoming events only, sanitized, formatted
                                   in campus time (FeedEvent), cached for an hour
   → src/app/page.tsx              home page
   → src/components/event-feed/    search, filters, cards, details panel
 ```
+
+**Daily sync:** Vercel Cron calls `/api/cron/sync` every day at 12:00 UTC
+(6 AM campus time in winter, 7 AM in summer; see `vercel.json`). It runs
+the same code as `bun run sync:rattlertracks` (`src/lib/sync-rattlertracks.ts`)
+and then clears the feed's cache so new events show up right away. The route
+only accepts Vercel's `Authorization: Bearer $CRON_SECRET` header, so set
+`CRON_SECRET` in the Vercel project's environment variables. Run logs are in
+the Vercel dashboard under the project's Cron Jobs / Logs.
 
 `src/lib/rattlertracks/` uses the JSON API behind the RattlerTracks website.
 That API is undocumented and disallowed in robots.txt, so the client keeps

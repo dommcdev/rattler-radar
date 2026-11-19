@@ -1,64 +1,155 @@
 /**
- * Where synced events are kept until the app has a database: a single JSON
- * file written by the sync script and read by the website.
- *
- * Both sides go through this module, so the file's location and format are
- * defined in one place. Swapping in a database later means reimplementing
- * `saveEvents` and `loadEvents`, not touching their callers.
+ * Where synced events are kept: the `event`, `event_tag`, and `event_sync`
+ * tables. The sync script writes through `saveRattlerTracksEvents`; the
+ * website reads through `loadUpcomingEvents`.
  */
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { z } from "zod";
 import {
-  type RattlerTracksEvent,
-  rattlerTracksEventSchema,
-} from "@/lib/rattlertracks";
+  and,
+  eq,
+  getTableColumns,
+  gt,
+  inArray,
+  notInArray,
+  sql,
+} from "drizzle-orm";
+import { db } from "@/db/client";
+import { type EventSource, event, eventSync, eventTag } from "@/db/schema";
+import { seriesKey } from "@/lib/events/series";
+import { type EventTag, tagEvent } from "@/lib/events/tag-event";
+import type { RattlerTracksEvent } from "@/lib/rattlertracks";
 
-const STORE_PATH = path.join(
-  process.cwd(),
-  "data",
-  "rattlertracks-events.json",
-);
+export type StoredEvent = typeof event.$inferSelect & { tags: EventTag[] };
 
-const storedEventsSchema = z.object({
-  syncedAt: z.iso.datetime(),
-  events: z.array(rattlerTracksEventSchema),
-});
-
-export type StoredEvents = z.infer<typeof storedEventsSchema>;
+/** `ends_at`, or `starts_at` for events with no end time. */
+const eventEnd = sql`coalesce(${event.endsAt}, ${event.startsAt})`;
 
 /**
- * Replaces the stored events. The file is written to a temp file and then
- * renamed, so readers never see a half-written file and a failed write
- * leaves the previous data in place.
+ * Saves a sync's events: new ones are added, existing ones updated, and
+ * upcoming RattlerTracks events missing from the sync (cancelled or
+ * unpublished) are removed. Past events are kept for students' history.
+ * Each event is tagged again. Everything is written in one batch, so a
+ * failed save leaves the previous data in place.
  */
-export async function saveEvents(
+export async function saveRattlerTracksEvents(
   events: RattlerTracksEvent[],
   syncedAt: Date,
-): Promise<string> {
-  const data: StoredEvents = { syncedAt: syncedAt.toISOString(), events };
-  await mkdir(path.dirname(STORE_PATH), { recursive: true });
-  const tempPath = `${STORE_PATH}.tmp`;
-  await writeFile(tempPath, `${JSON.stringify(data, null, 2)}\n`);
-  await rename(tempPath, STORE_PATH);
-  return STORE_PATH;
+): Promise<{ saved: number; removed: number }> {
+  const tagged = await Promise.all(
+    events.map(async (rtEvent) => ({ rtEvent, tags: await tagEvent(rtEvent) })),
+  );
+  const ids = events.map((rtEvent) => rtEvent.sourceId);
+
+  const missing = await db
+    .select({ id: event.id })
+    .from(event)
+    .where(
+      and(
+        eq(event.source, "rattlertracks"),
+        gt(eventEnd, syncedAt.getTime()),
+        notInArray(event.id, ids),
+      ),
+    );
+
+  const statements = [
+    ...tagged.map(({ rtEvent }) => {
+      const row = toEventRow(rtEvent);
+      return db
+        .insert(event)
+        .values(row)
+        .onConflictDoUpdate({ target: event.id, set: row });
+    }),
+    ...(missing.length > 0
+      ? [
+          db.delete(event).where(
+            inArray(
+              event.id,
+              missing.map(({ id }) => id),
+            ),
+          ),
+        ]
+      : []),
+    ...(ids.length > 0
+      ? [db.delete(eventTag).where(inArray(eventTag.eventId, ids))]
+      : []),
+    ...tagged.flatMap(({ rtEvent, tags }) =>
+      tags.length > 0
+        ? [
+            db
+              .insert(eventTag)
+              .values(
+                tags.map((tag) => ({ eventId: rtEvent.sourceId, ...tag })),
+              ),
+          ]
+        : [],
+    ),
+    db
+      .insert(eventSync)
+      .values({ source: "rattlertracks", syncedAt })
+      .onConflictDoUpdate({ target: eventSync.source, set: { syncedAt } }),
+  ];
+  const [first, ...rest] = statements;
+  await db.batch([first, ...rest]);
+
+  return { saved: events.length, removed: missing.length };
 }
 
-/**
- * Reads the stored events. Returns `null` if no sync has run yet; throws if
- * the file exists but doesn't match the expected format.
- */
-export async function loadEvents(): Promise<StoredEvents | null> {
-  let contents: string;
-  try {
-    contents = await readFile(STORE_PATH, "utf8");
-  } catch (error) {
-    if (isFileNotFound(error)) return null;
-    throw error;
-  }
-  return storedEventsSchema.parse(JSON.parse(contents));
+/** Events that haven't ended by `now`, soonest first, with their tags. */
+export async function loadUpcomingEvents(now: Date): Promise<{
+  syncedAt: Date | null;
+  events: StoredEvent[];
+}> {
+  const [rows, tagRows, sync] = await Promise.all([
+    db
+      .select()
+      .from(event)
+      .where(gt(eventEnd, now.getTime()))
+      .orderBy(event.startsAt),
+    db
+      .select(getTableColumns(eventTag))
+      .from(eventTag)
+      .innerJoin(event, eq(event.id, eventTag.eventId))
+      .where(gt(eventEnd, now.getTime())),
+    db.select().from(eventSync).where(eq(eventSync.source, "rattlertracks")),
+  ]);
+
+  const tagsByEvent = Map.groupBy(tagRows, (tag) => tag.eventId);
+  return {
+    syncedAt: sync[0]?.syncedAt ?? null,
+    events: rows.map((row) => ({
+      ...row,
+      tags: (tagsByEvent.get(row.id) ?? []).map(({ tagId, confidence }) => ({
+        tagId,
+        confidence,
+      })),
+    })),
+  };
 }
 
-function isFileNotFound(error: unknown): boolean {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
+/** A RattlerTracks event as a row of the `event` table. */
+export function toEventRow(
+  rtEvent: RattlerTracksEvent,
+  { id = rtEvent.sourceId, source = "rattlertracks" as EventSource } = {},
+): typeof event.$inferInsert {
+  return {
+    id,
+    source,
+    url: rtEvent.url,
+    title: rtEvent.title,
+    descriptionHtml: rtEvent.descriptionHtml,
+    startsAt: new Date(rtEvent.startsAt),
+    endsAt: rtEvent.endsAt ? new Date(rtEvent.endsAt) : null,
+    location: rtEvent.location,
+    latitude: rtEvent.latitude,
+    longitude: rtEvent.longitude,
+    imageUrl: rtEvent.imageUrl,
+    hosts: rtEvent.hosts,
+    theme: rtEvent.theme,
+    categories: rtEvent.categories,
+    benefits: rtEvent.benefits,
+    rsvpCount: rtEvent.rsvpCount,
+    seriesKey: seriesKey(
+      rtEvent.title,
+      rtEvent.hosts.map((host) => host.id),
+    ),
+  };
 }

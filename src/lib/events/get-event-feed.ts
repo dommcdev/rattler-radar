@@ -1,11 +1,11 @@
 import "server-only";
 
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import sanitizeHtml from "sanitize-html";
-import { loadEvents } from "@/lib/event-store";
-import type { RattlerTracksEvent } from "@/lib/rattlertracks";
-import type { EventFeedData, FeedEvent } from "./feed-event";
+import { loadUpcomingEvents, type StoredEvent } from "@/lib/event-store";
+import type { EventDetails, EventFeedData, FeedEvent } from "./feed-event";
 import { formatDateParts, formatDateTime, formatWhen } from "./format";
+import type { EventTag } from "./tag-event";
 
 /** RattlerTracks' theme names, renamed to what students would call them. */
 const TOPIC_LABELS: Record<string, string> = {
@@ -37,43 +37,77 @@ const DESCRIPTION_HTML_OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
+/** The daily sync clears this tag so new events show up right away. */
+export const EVENTS_CACHE_TAG = "events";
+
 /**
- * Upcoming events for the home page, soonest first.
+ * Upcoming events straight from the database, with their tags.
  *
- * Cached for an hour: events only change when the daily sync runs, and the
- * cache also decides when finished events drop off the page.
+ * Cached for an hour: events only change when the daily sync runs (which
+ * clears the cache), and the hourly refresh decides when finished events
+ * drop off the page.
  */
-export async function getEventFeed(): Promise<EventFeedData> {
+async function getUpcomingEvents() {
   "use cache";
   cacheLife("hours");
+  cacheTag(EVENTS_CACHE_TAG);
+  return loadUpcomingEvents(new Date());
+}
 
-  const stored = await loadEvents();
-  if (!stored) return { events: [], lastSynced: null };
-
-  const now = Date.now();
-  const events = stored.events
-    .filter((event) => Date.parse(event.endsAt ?? event.startsAt) > now)
-    .toSorted((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
-    .map(toFeedEvent);
-
-  return { events, lastSynced: formatDateTime(stored.syncedAt) };
+/** Upcoming events for the home page, soonest first. */
+export async function getEventFeed(): Promise<EventFeedData> {
+  const { events, syncedAt } = await getUpcomingEvents();
+  return {
+    events: events.map(toFeedEvent),
+    lastSynced: syncedAt ? formatDateTime(syncedAt.toISOString()) : null,
+  };
 }
 
 /** One upcoming event, for its page. Null if it doesn't exist or has ended. */
-export async function getEvent(id: string): Promise<FeedEvent | null> {
-  const { events } = await getEventFeed();
-  return events.find((event) => event.id === id) ?? null;
+export async function getEvent(id: string): Promise<EventDetails | null> {
+  const { events } = await getUpcomingEvents();
+  const event = events.find((upcoming) => upcoming.id === id);
+  if (!event) return null;
+  return {
+    ...toFeedEvent(event),
+    descriptionHtml: event.descriptionHtml
+      ? sanitizeHtml(event.descriptionHtml, DESCRIPTION_HTML_OPTIONS)
+      : null,
+  };
 }
 
-function toFeedEvent(event: RattlerTracksEvent): FeedEvent {
+/** What scoring needs to know about each upcoming event. Server-only. */
+export interface EventSignals {
+  id: string;
+  startsAt: number;
+  seriesKey: string;
+  hostIds: string[];
+  tags: EventTag[];
+}
+
+export async function getUpcomingEventSignals(): Promise<EventSignals[]> {
+  const { events } = await getUpcomingEvents();
+  return events.map((event) => ({
+    id: event.id,
+    startsAt: event.startsAt.getTime(),
+    seriesKey: event.seriesKey,
+    hostIds: event.hosts.map((host) => host.id),
+    tags: event.tags,
+  }));
+}
+
+function toFeedEvent(event: StoredEvent): FeedEvent {
+  const startsAt = event.startsAt.toISOString();
+  const endsAt = event.endsAt?.toISOString() ?? null;
   return {
-    id: event.sourceId,
+    id: event.id,
+    source: event.source,
     url: event.url,
     title: event.title,
-    startsAt: event.startsAt,
-    endsAt: event.endsAt,
-    when: formatWhen(event.startsAt, event.endsAt),
-    start: formatDateParts(event.startsAt),
+    startsAt,
+    endsAt,
+    when: formatWhen(startsAt, endsAt),
+    start: formatDateParts(startsAt),
     location: event.location,
     hosts: event.hosts,
     imageUrl: event.imageUrl,
@@ -82,8 +116,5 @@ function toFeedEvent(event: RattlerTracksEvent): FeedEvent {
     hasFreeFood: event.benefits.includes(FREE_FOOD),
     benefits: event.benefits,
     rsvpCount: event.rsvpCount,
-    descriptionHtml: event.descriptionHtml
-      ? sanitizeHtml(event.descriptionHtml, DESCRIPTION_HTML_OPTIONS)
-      : null,
   };
 }

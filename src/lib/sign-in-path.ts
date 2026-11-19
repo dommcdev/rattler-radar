@@ -11,6 +11,12 @@ export function signInPath(returnTo = "/"): string {
   return `${SIGN_IN_PAGE}?${new URLSearchParams({ returnTo })}`;
 }
 
+/** Onboarding, for new accounts; continues to `returnTo` when done. */
+export function onboardingPath(returnTo = "/"): string {
+  if (returnTo === "/") return "/onboarding";
+  return `/onboarding?${new URLSearchParams({ returnTo })}`;
+}
+
 /**
  * Only allows paths on this site, so a crafted link can't use sign-in to
  * send someone to another website after they log in.

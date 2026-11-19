@@ -42,7 +42,9 @@ export const rattlerTracksEventSchema = z.object({
 export type RattlerTracksEvent = z.infer<typeof rattlerTracksEventSchema>;
 
 export function normalizeEvent(raw: RawEvent): RattlerTracksEvent {
+  // Clubs can upload a PDF as the "image"; browsers can't show those.
   const imagePath = cleanText(raw.imagePath);
+  const isImage = imagePath !== null && !/\.pdf$/i.test(imagePath);
 
   return {
     sourceId: raw.id,
@@ -54,7 +56,7 @@ export function normalizeEvent(raw: RawEvent): RattlerTracksEvent {
     location: cleanText(raw.location),
     latitude: parseCoordinate(raw.latitude),
     longitude: parseCoordinate(raw.longitude),
-    imageUrl: imagePath ? `${IMAGE_BASE_URL}/${imagePath}` : null,
+    imageUrl: isImage ? `${IMAGE_BASE_URL}/${imagePath}` : null,
     hosts: toHosts(raw),
     theme: cleanText(raw.theme),
     categories: cleanList(raw.categoryNames),

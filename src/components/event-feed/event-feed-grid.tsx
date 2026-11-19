@@ -14,7 +14,11 @@ import { EventCard } from "./event-card";
 import { useEventFeed } from "./event-feed-context";
 
 /** Cards in the first row or so load immediately instead of lazily. */
-const EAGER_CARD_COUNT = 4;
+export const EAGER_CARD_COUNT = 4;
+
+/** One card per row on phones, up to four on wide screens. Card flyer sizes in `event-card.tsx` assume these columns. */
+export const EVENT_GRID_CLASS =
+  "grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
 
 /** One card per row on phones, up to four on wide screens. */
 export function EventFeedGrid() {
@@ -27,7 +31,7 @@ export function EventFeedGrid() {
   if (visibleEvents.length === 0) return <NoMatches />;
 
   return (
-    <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+    <div className={EVENT_GRID_CLASS}>
       {visibleEvents.map((event, index) => (
         <EventCard
           key={event.id}

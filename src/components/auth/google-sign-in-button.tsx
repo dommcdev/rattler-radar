@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
-import { SIGN_IN_PAGE } from "@/lib/sign-in-path";
+import { onboardingPath, SIGN_IN_PAGE } from "@/lib/sign-in-path";
 
 /**
  * Starts Google sign-in. On success the browser goes to Google and back to
@@ -22,6 +22,8 @@ export function GoogleSignInButton({ returnTo }: { returnTo: string }) {
       const { error } = await authClient.signIn.social({
         provider: "google",
         callbackURL: returnTo,
+        // First sign-in creates the account: pick interests, then continue.
+        newUserCallbackURL: onboardingPath(returnTo),
         errorCallbackURL: SIGN_IN_PAGE,
       });
       // Only reached if the request itself failed (e.g. the network is down);

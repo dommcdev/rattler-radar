@@ -69,6 +69,12 @@ describe("normalizeEvent", () => {
     });
   });
 
+  test("drops PDF flyers, which browsers can't show as images", () => {
+    expect(
+      normalizeEvent(parse({ imagePath: "flyer.pdf" })).imageUrl,
+    ).toBeNull();
+  });
+
   test("trims stray whitespace", () => {
     const event = normalizeEvent(
       parse({ name: "\tAlpha Phifa 2026", location: "Law Classroom " }),

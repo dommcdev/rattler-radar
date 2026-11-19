@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* St. Mary's official colors (PMS 301 C blue, PMS 143 C gold), used by the logo. */
+@theme {
+  --color-stmu-blue: #0d4d84;
+  --color-stmu-gold: #efba31;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

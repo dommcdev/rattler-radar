@@ -29,6 +29,8 @@ interface EventFeedContextValue {
     clearSearchAndFilter: () => void;
   };
   meta: {
+    /** Every event given to the provider. */
+    events: FeedEvent[];
     filters: FeedFilter[];
     totalCount: number;
   };
@@ -114,7 +116,7 @@ export function EventFeedProvider({
         setFilterId(ALL_FILTER_ID);
       },
     },
-    meta: { filters, totalCount: events.length },
+    meta: { events, filters, totalCount: events.length },
   };
 
   return <EventFeedContext value={value}>{children}</EventFeedContext>;

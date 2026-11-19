@@ -23,7 +23,7 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 pb-[10vh]">
       <div className="flex w-full max-w-sm flex-col items-center gap-10">
         <Link href="/" aria-label="RattlerRadar home">
-          <Logo className="text-2xl" />
+          <Logo className="text-3xl" />
         </Link>
         {/* Reads the URL and session, so it renders at request time. */}
         <Suspense fallback={<Skeleton className="h-10 w-full" />}>
