@@ -11,6 +11,11 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+**Local vs. Turso:** `.env` points at the local SQLite file. `.env.turso`
+holds Turso's `DATABASE_URL` and `DATABASE_AUTH_TOKEN`; put `turso` before
+any script to run it against Turso instead, e.g. `bun run turso db:push`,
+`bun run turso tag:events`, or `bun run turso dev`.
+
 ## How events get to the page
 
 ```
