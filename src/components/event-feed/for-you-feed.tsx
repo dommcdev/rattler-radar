@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import type {
   FeedEvent,
@@ -78,7 +79,7 @@ export function ForYouFeed({
               id="more-events"
               className="text-lg font-semibold tracking-tight"
             >
-              More upcoming events
+              More events for you
             </h2>
           ) : (
             <h1
@@ -89,10 +90,11 @@ export function ForYouFeed({
             </h1>
           )}
           <Link
-            href="/onboarding?returnTo=/"
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            href="/events"
+            className="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
           >
-            Edit interests
+            View all events
+            <ArrowRightIcon aria-hidden className="size-3.5" />
           </Link>
         </div>
 

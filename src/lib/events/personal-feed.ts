@@ -8,6 +8,15 @@ import { pickSections, scoreEvents } from "./score";
 
 const DAY_MS = 86_400_000;
 
+/** Whether we know anything to personalize with: interests or history. */
+export async function canPersonalize(userId: string): Promise<boolean> {
+  const [interests, interactions] = await Promise.all([
+    getUserInterests(userId),
+    getInteractions(userId),
+  ]);
+  return interests.length > 0 || interactions.length > 0;
+}
+
 /** The home page's two sections for one student. */
 export async function getPersonalFeed(userId: string): Promise<PersonalFeed> {
   const [interests, interactions, signals, { events }] = await Promise.all([

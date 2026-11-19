@@ -38,7 +38,7 @@ export default async function EventPage({ params }: PageProps<"/events/[id]">) {
       <TrackEventView eventId={event.id} />
       <main className="mx-auto w-full max-w-[1100px] px-4 pt-5 pb-16 sm:px-6">
         <Link
-          href="/"
+          href="/events"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeftIcon className="size-4" />

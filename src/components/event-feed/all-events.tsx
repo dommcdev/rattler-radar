@@ -2,28 +2,24 @@ import type { ReactNode } from "react";
 import { EventFeed } from "./event-feed";
 
 /**
- * Every upcoming event with topic filters: the /events page, and the home
- * page for visitors we can't personalize for yet. Must be inside
- * `<EventFeed.Provider>`.
+ * Every upcoming event with topic filters, for the /events page. Must be
+ * inside `<EventFeed.Provider>`.
  */
 export function AllEvents({
   lastSynced,
   notice,
 }: {
   lastSynced: string | null;
-  /** A line above the list, e.g. inviting the visitor to pick interests. */
+  /** Above the list, e.g. inviting the visitor to sign in. Brings its own spacing. */
   notice?: ReactNode;
 }) {
   return (
     <>
-      {notice ? <div className="mb-6">{notice}</div> : null}
+      {notice}
       <div className="mb-8 space-y-4">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Upcoming events
-          </h1>
-          <EventFeed.Count />
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Upcoming events
+        </h1>
         <EventFeed.Filters />
       </div>
 

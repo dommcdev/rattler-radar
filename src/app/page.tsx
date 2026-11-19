@@ -1,6 +1,5 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AllEvents } from "@/components/event-feed/all-events";
 import { EventFeed } from "@/components/event-feed/event-feed";
 import { EVENT_GRID_CLASS } from "@/components/event-feed/event-feed-grid";
 import { ForYouFeed } from "@/components/event-feed/for-you-feed";
@@ -11,8 +10,10 @@ import { getPersonalFeed } from "@/lib/events/personal-feed";
 import { getSession } from "@/lib/session";
 
 /**
- * Signed in with interests or history: "Events you might like" and
- * "Upcoming events for you" (see plan.md). Everyone else: all events.
+ * The personal feed: "Events you might like" and "More events for you"
+ * (see plan.md). Visitors we can't personalize for (not signed in, or no
+ * interests or history yet) go to /events instead; `src/proxy.ts` sends
+ * visitors without a session there before this page even renders.
  *
  * The event list is cached and shared, so the header and search render
  * right away; only the personal part waits for the session.
@@ -37,46 +38,12 @@ export default async function HomePage() {
 
 async function HomeFeed({ lastSynced }: { lastSynced: string | null }) {
   const session = await getSession();
-  if (!session) {
-    return (
-      <AllEvents
-        lastSynced={lastSynced}
-        notice={
-          <Notice>
-            <Link href="/sign-in" className={NOTICE_LINK}>
-              Sign in
-            </Link>{" "}
-            for a personalized event feed
-          </Notice>
-        }
-      />
-    );
-  }
+  if (!session) redirect("/events");
 
   const feed = await getPersonalFeed(session.user.id);
-  if (feed.kind === "empty") {
-    return (
-      <AllEvents
-        lastSynced={lastSynced}
-        notice={
-          <Notice>
-            <Link href="/onboarding?returnTo=/" className={NOTICE_LINK}>
-              Pick a few interests
-            </Link>{" "}
-            and we'll put the events you'd like most first.
-          </Notice>
-        }
-      />
-    );
-  }
+  if (feed.kind === "empty") redirect("/events");
 
   return <ForYouFeed feed={feed} lastSynced={lastSynced} />;
-}
-
-const NOTICE_LINK = "font-medium text-foreground underline underline-offset-4";
-
-function Notice({ children }: { children: React.ReactNode }) {
-  return <p className="text-[15px] text-muted-foreground">{children}</p>;
 }
 
 function FeedSkeleton() {
